@@ -1,0 +1,14 @@
+export { OpeningScreen } from "./OpeningScreen";
+export { HeroSection } from "./HeroSection";
+export { BrideGroom } from "./BrideGroom";
+export { WeddingQuote } from "./WeddingQuote";
+export { CountdownSection } from "./CountdownSection";
+export { LoveStory } from "./LoveStory";
+export { GallerySection } from "./GallerySection";
+export { VideoSection } from "./VideoSection";
+export { EventDetail } from "./EventDetail";
+export { LocationSection } from "./LocationSection";
+export { GiftSection } from "./GiftSection";
+export { RSVPSection } from "./RSVPSection";
+export { WeddingWishes } from "./WeddingWishes";
+export { FooterSection } from "./FooterSection";

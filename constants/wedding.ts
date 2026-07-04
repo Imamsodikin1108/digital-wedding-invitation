@@ -1,0 +1,1 @@
+export { WEDDING } from "./index";

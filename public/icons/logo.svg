@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 120" fill="none">
+  <!-- Left decorative line -->
+  <line x1="4" y1="60" x2="44" y2="60" stroke="#c6a969" stroke-width="0.75" opacity="0.5"/>
+  <!-- Right decorative line -->
+  <line x1="236" y1="60" x2="276" y2="60" stroke="#c6a969" stroke-width="0.75" opacity="0.5"/>
+  <!-- Small diamond left -->
+  <rect x="40" y="57" width="6" height="6" transform="rotate(45 43 60)" fill="#c6a969" opacity="0.5"/>
+  <!-- Small diamond right -->
+  <rect x="234" y="57" width="6" height="6" transform="rotate(45 237 60)" fill="#c6a969" opacity="0.5"/>
+  <!-- A -->
+  <text x="82" y="90" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-size="80" fill="#c6a969" text-anchor="middle">A</text>
+  <!-- & -->
+  <text x="140" y="72" font-family="Georgia, 'Times New Roman', serif" font-size="32" fill="#c6a969" opacity="0.75" text-anchor="middle">&amp;</text>
+  <!-- S -->
+  <text x="198" y="90" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-size="80" fill="#c6a969" text-anchor="middle">S</text>
+</svg>
