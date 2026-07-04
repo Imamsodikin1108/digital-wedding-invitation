@@ -24,22 +24,41 @@ function GiftCard({ gift }: { gift: GiftMethod }) {
 
   return (
     <StaggerItem>
-      <Card variant="default" padding="md" hoverable className="flex flex-col gap-5 !rounded-2xl">
+      <Card
+        variant="default"
+        padding="none"
+        hoverable
+        className="relative flex flex-col gap-5 !rounded-2xl overflow-hidden p-6 ring-1 ring-gold/15"
+      >
+        {/* Top gold accent bar */}
+        <span
+          aria-hidden
+          className="absolute inset-x-0 top-0 h-1 gradient-gold"
+        />
+        {/* Subtle corner glow */}
+        <span
+          aria-hidden
+          className="pointer-events-none absolute -top-10 -right-10 w-28 h-28 rounded-full bg-gold/10 blur-2xl"
+        />
+
         {/* Header */}
         <div className="flex items-center gap-3">
           {gift.logo && (
-            <div className="relative w-10 h-10 rounded-xl overflow-hidden shrink-0">
+            <div className="relative w-12 h-12 rounded-xl overflow-hidden shrink-0 bg-white ring-1 ring-gold/20 shadow-[var(--shadow-soft)] flex items-center justify-center p-1.5">
               <Image
                 src={gift.logo}
                 alt={gift.name}
                 fill
-                className="object-contain"
-                sizes="40px"
+                className="object-contain p-1.5"
+                sizes="48px"
               />
             </div>
           )}
           <div className="flex-1 min-w-0">
-            <h4 className="font-jakarta font-bold text-blue-600 text-sm">
+            <p className="font-jakarta text-[0.65rem] uppercase tracking-[0.15em] text-gold">
+              Transfer Bank
+            </p>
+            <h4 className="font-playfair font-semibold text-[var(--foreground)] text-lg leading-tight">
               {gift.name}
             </h4>
           </div>
@@ -47,14 +66,14 @@ function GiftCard({ gift }: { gift: GiftMethod }) {
 
         {/* Account Info */}
         {gift.type !== "qris" && (
-          <div className="flex flex-col gap-1 p-3 rounded-xl bg-[var(--muted)]">
-            <p className="font-jakarta text-xs text-[var(--muted-foreground)]">
+          <div className="relative flex flex-col gap-1.5 p-4 rounded-xl bg-linear-to-br from-[var(--muted)] to-[var(--secondary)] border border-gold/10">
+            <p className="font-jakarta text-[0.65rem] uppercase tracking-[0.12em] text-[var(--muted-foreground)]">
               Nomor Rekening
             </p>
-            <p className="font-jakarta font-semibold text-[var(--foreground)] text-lg tracking-wider">
+            <p className="font-jakarta font-bold text-[var(--foreground)] text-xl tracking-[0.12em]">
               {gift.accountNumber}
             </p>
-            <p className="font-jakarta text-xs text-[var(--muted-foreground)]">
+            <p className="font-cormorant italic text-sm text-[var(--muted-foreground)]">
               a.n. {gift.accountName}
             </p>
           </div>

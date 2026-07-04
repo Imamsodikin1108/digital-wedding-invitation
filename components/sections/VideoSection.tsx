@@ -42,17 +42,40 @@ export function VideoSection() {
           className="mb-12"
         />
 
-        <ScaleIn className="max-w-2xl mx-auto">
-          <div className="relative rounded-[2rem] overflow-hidden shadow-[var(--shadow-large)] bg-black w-full p-3">
-            <video
-              ref={videoRef}
-              src={VIDEOS.hero}
-              poster={IMAGES.videoPoster}
-              className="w-full h-auto block"
-              playsInline
-              preload="metadata"
-              onEnded={handleEnded}
+        <ScaleIn className="max-w-3xl mx-auto">
+          <div className="relative group/frame">
+            {/* Soft gold aura behind the video */}
+            <div
+              className="absolute -inset-4 rounded-[2.5rem] bg-linear-to-br from-gold/20 via-transparent to-gold/10 blur-2xl opacity-60 transition-opacity duration-500 group-hover/frame:opacity-100 pointer-events-none"
+              aria-hidden
             />
+
+            <div className="relative rounded-[2rem] overflow-hidden shadow-[var(--shadow-large)] ring-1 ring-gold/20 w-full">
+              <video
+                ref={videoRef}
+                src={VIDEOS.hero}
+                poster={IMAGES.videoPoster}
+                className="w-full h-auto block"
+                playsInline
+                preload="metadata"
+                onEnded={handleEnded}
+              />
+
+              {/* Javanese corner ornaments — elegant gold accents */}
+              {[
+                "top-4 left-4 border-t-2 border-l-2 rounded-tl-xl",
+                "top-4 right-4 border-t-2 border-r-2 rounded-tr-xl",
+                "bottom-4 left-4 border-b-2 border-l-2 rounded-bl-xl",
+                "bottom-4 right-4 border-b-2 border-r-2 rounded-br-xl",
+              ].map((pos) => (
+                <span
+                  key={pos}
+                  aria-hidden
+                  className={`pointer-events-none absolute z-20 w-8 h-8 border-gold/70 transition-opacity duration-300 ${
+                    isPlaying ? "opacity-0" : "opacity-100"
+                  } ${pos}`}
+                />
+              ))}
 
             {/* Overlay + play button */}
             <button
@@ -96,6 +119,7 @@ export function VideoSection() {
                 </div>
               )}
             </button>
+            </div>
           </div>
         </ScaleIn>
       </div>
