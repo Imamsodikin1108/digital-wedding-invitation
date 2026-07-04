@@ -29,7 +29,18 @@ const floatingFlowers = [
 ];
 
 export function OpeningScreen({ guestName, isOpen, onOpen }: OpeningScreenProps) {
-  const { setInteracted } = useMusicStore();
+  const { setInteracted, hasInteracted } = useMusicStore();
+
+  // Musik langsung play saat pengguna pertama kali menyentuh/klik layar
+  useEffect(() => {
+    if (hasInteracted) return;
+    const startMusic = () => {
+      setInteracted();
+      document.removeEventListener("pointerdown", startMusic);
+    };
+    document.addEventListener("pointerdown", startMusic, { once: true });
+    return () => document.removeEventListener("pointerdown", startMusic);
+  }, [hasInteracted, setInteracted]);
 
   const handleOpen = useCallback(() => {
     setInteracted();

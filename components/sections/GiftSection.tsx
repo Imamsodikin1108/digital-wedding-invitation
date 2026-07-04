@@ -6,7 +6,6 @@ import { Check, Copy, QrCode } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { Card } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
 import { FadeIn, StaggerContainer, StaggerItem } from "@/components/motion";
 import { WEDDING } from "@/constants/wedding";
 import type { GiftMethod } from "@/types/wedding";
@@ -25,7 +24,7 @@ function GiftCard({ gift }: { gift: GiftMethod }) {
 
   return (
     <StaggerItem>
-      <Card variant="default" padding="md" hoverable className="flex flex-col gap-5">
+      <Card variant="default" padding="md" hoverable className="flex flex-col gap-5 !rounded-2xl">
         {/* Header */}
         <div className="flex items-center gap-3">
           {gift.logo && (
@@ -40,12 +39,9 @@ function GiftCard({ gift }: { gift: GiftMethod }) {
             </div>
           )}
           <div className="flex-1 min-w-0">
-            <h4 className="font-jakarta font-semibold text-[var(--foreground)] text-sm">
+            <h4 className="font-jakarta font-bold text-blue-600 text-sm">
               {gift.name}
             </h4>
-            <Badge variant="muted" className="mt-1 capitalize">
-              {gift.type === "ewallet" ? "E-Wallet" : gift.type.toUpperCase()}
-            </Badge>
           </div>
         </div>
 
@@ -148,7 +144,7 @@ export function GiftSection() {
         </FadeIn>
 
         <StaggerContainer
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 max-w-5xl mx-auto"
+          className="grid grid-cols-1 sm:grid-cols-2 gap-5 max-w-2xl mx-auto"
           staggerChildren={0.1}
         >
           {WEDDING.gifts.map((gift) => (

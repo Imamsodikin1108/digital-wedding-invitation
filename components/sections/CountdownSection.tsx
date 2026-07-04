@@ -52,7 +52,7 @@ export function CountdownSection() {
         <SectionTitle
           label="Menuju Hari Bahagia"
           title="Hitung Mundur"
-          subtitle={`${WEDDING.date} · ${WEDDING.events[0]?.city}`}
+          subtitle={`${WEDDING.date} · ${WEDDING.events[0]?.address}, ${WEDDING.events[0]?.city}`}
         />
 
         {isExpired ? (

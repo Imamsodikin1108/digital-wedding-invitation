@@ -69,7 +69,7 @@ function PersonCard({
       {/* Parents */}
       <div className="flex flex-col gap-1 max-w-xs">
         <p className="font-cinzel text-[10px] text-gold tracking-[0.2em] uppercase">
-          Putra/Putri dari
+          {person.nickname}, {person.role === "groom" ? "Putra" : "Putri"} dari
         </p>
         <p className="font-jakarta text-sm text-[var(--foreground)]">
           {person.parents.father}

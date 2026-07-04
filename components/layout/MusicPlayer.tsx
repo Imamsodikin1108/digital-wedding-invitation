@@ -42,7 +42,6 @@ export function MusicPlayer() {
   }, [isPlaying]);
 
   if (!hasInteracted) return null;
-
   return (
     <AnimatePresence>
       <motion.div

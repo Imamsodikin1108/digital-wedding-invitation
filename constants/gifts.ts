@@ -5,7 +5,7 @@ export const GIFTS: GiftMethod[] = [
   {
     id: "bca",
     type: "bank",
-    name: "Bank BCA",
+    name: "BCA",
     accountNumber: "6880687130",
     accountName: "AHMAD KURNIAWAN",
     logo: IMAGES.logos.bca,
@@ -13,17 +13,9 @@ export const GIFTS: GiftMethod[] = [
   {
     id: "bri",
     type: "bank",
-    name: "Bank BRI",
+    name: "BRI",
     accountNumber: "031901007718530",
     accountName: "SEPTIA PURNAWATI",
-    logo: IMAGES.logos.mandiri,
-  },
-  {
-    id: "qris",
-    type: "qris",
-    name: "QRIS",
-    accountNumber: "",
-    accountName: "Azwan & Septia",
-    qrImage: IMAGES.qris,
+    logo: IMAGES.logos.bri,
   },
 ];

@@ -70,12 +70,13 @@ function TimelineItem({
           </div>
 
           {item.photo && (
-            <div className="relative w-full h-52 sm:h-64 overflow-hidden">
+            <div className="relative w-full aspect-[4/3] overflow-hidden">
               <Image
                 src={item.photo}
                 alt={item.title}
                 fill
                 className="object-cover transition-transform duration-700 group-hover:scale-105"
+                style={{ objectPosition: item.objectPosition ?? "center center" }}
                 sizes="(max-width: 768px) 100vw, 50vw"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[var(--card)] via-transparent to-transparent" />

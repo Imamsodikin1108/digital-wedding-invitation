@@ -21,7 +21,7 @@ export const IMAGES = {
   // ---------- Love Story timeline (use prewedding photos) ----------
   story: {
     1: "/images/lampiran_5/DSC00685.jpg",
-    2: "/images/lampiran_5/IMG_8882.jpg",
+    2: "/images/lampiran_5/IMG_8887.jpg",
     3: "/images/lampiran_5/IMG_8890.jpg",
     4: "/images/lampiran_5/IMG_8906.jpg",
     5: "/images/lampiran_5/IMG_8927.jpg",
@@ -41,9 +41,8 @@ export const IMAGES = {
 
   // ---------- Gift & payment logos ----------
   logos: {
-    bca: "/images/logos/bca.svg",
-    mandiri: "/images/logos/mandiri.svg",
-    dana: "/images/logos/dana.svg",
+    bca: "/images/bca.png",
+    bri: "/images/bri.png",
   },
 
   // ---------- QR Code ----------

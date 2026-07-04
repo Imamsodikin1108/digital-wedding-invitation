@@ -37,6 +37,7 @@ export interface LoveStoryItem {
   title: string;
   description: string;
   photo?: string;
+  objectPosition?: string;
 }
 
 export interface GalleryImage {

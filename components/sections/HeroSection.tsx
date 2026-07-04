@@ -2,8 +2,6 @@
 
 import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
-import Image from "next/image";
-import { CornerOrnament, BatikKawung } from "@/components/ornament";
 import { WEDDING } from "@/constants/wedding";
 import { IMAGES, VIDEOS } from "@/lib/assets";
 import { COLORS } from "@/lib/tokens";
@@ -15,7 +13,7 @@ export function HeroSection() {
       className="relative h-screen min-h-[600px] flex items-center justify-center overflow-hidden"
       aria-label="Hero section"
     >
-      {/* Background Video — falls back to poster when video unavailable */}
+      {/* Background Video */}
       <div className="absolute inset-0 -z-10">
         <video
           className="w-full h-full object-cover"
@@ -28,31 +26,13 @@ export function HeroSection() {
         >
           <source src={VIDEOS.hero} type="video/mp4" />
         </video>
-        <div className="video-overlay" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-[#0f0a06]/80" />
-      </div>
-
-      {/* Batik kawung — subtle full-screen texture */}
-      <div className="absolute inset-0 -z-10 flex items-center justify-center pointer-events-none" aria-hidden="true">
-        <BatikKawung size={900} color="#ffffff" className="opacity-[0.025]" />
-      </div>
-
-      {/* Corner ornaments */}
-      <div className="absolute top-6 left-6 pointer-events-none" aria-hidden="true">
-        <CornerOrnament size={60} color={COLORS.gold} className="opacity-50" />
-      </div>
-      <div className="absolute top-6 right-6 pointer-events-none rotate-90" aria-hidden="true">
-        <CornerOrnament size={60} color={COLORS.gold} className="opacity-50" />
-      </div>
-      <div className="absolute bottom-16 left-6 pointer-events-none -rotate-90" aria-hidden="true">
-        <CornerOrnament size={60} color={COLORS.gold} className="opacity-50" />
-      </div>
-      <div className="absolute bottom-16 right-6 pointer-events-none rotate-180" aria-hidden="true">
-        <CornerOrnament size={60} color={COLORS.gold} className="opacity-50" />
+        {/* Overlay ringan — gambar tetap jelas */}
+        <div className="absolute inset-0 bg-black/35" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60" />
       </div>
 
       {/* Content */}
-      <div className="relative z-10 flex flex-col items-center text-center px-6 gap-6">
+      <div className="relative z-10 flex flex-col items-center text-center px-6 gap-5">
         {/* Label atas */}
         <motion.div
           className="flex flex-col items-center gap-2"
@@ -68,7 +48,7 @@ export function HeroSection() {
             <div className="w-1 h-1 rounded-full bg-gold/70" />
             <div className="h-px w-8 bg-gold/50" />
           </div>
-          <span className="font-cinzel text-white/60 text-[10px] sm:text-xs tracking-[0.2em] uppercase">
+          <span className="font-cinzel text-white/70 text-[10px] sm:text-xs tracking-[0.2em] uppercase">
             Mengundang Anda Hadir Dalam
           </span>
         </motion.div>
@@ -89,25 +69,25 @@ export function HeroSection() {
           </h1>
         </motion.div>
 
-        {/* Gunungan divider */}
+        {/* Divider */}
         <motion.div
           className="flex items-center gap-3"
           initial={{ opacity: 0, scaleX: 0 }}
           animate={{ opacity: 1, scaleX: 1 }}
           transition={{ delay: 0.9, duration: 0.8, ease: "easeOut" }}
         >
-          <div className="h-px w-10 bg-gold/50" />
+          <div className="h-px w-12 bg-gold/60" />
           <svg width="16" height="22" viewBox="0 0 16 22" fill="none" aria-hidden="true">
-            <path d="M8 1 L15 8 L15 20 L1 20 L1 8 Z" stroke={COLORS.gold} strokeWidth="1" fill="none" opacity="0.8" />
-            <circle cx="8" cy="1" r="1.5" fill={COLORS.gold} opacity="0.9" />
-            <circle cx="8" cy="12" r="2" stroke={COLORS.gold} strokeWidth="0.8" fill="none" opacity="0.6" />
+            <path d="M8 1 L15 8 L15 20 L1 20 L1 8 Z" stroke={COLORS.gold} strokeWidth="1" fill="none" opacity="0.9" />
+            <circle cx="8" cy="1" r="1.5" fill={COLORS.gold} opacity="1" />
+            <circle cx="8" cy="12" r="2" stroke={COLORS.gold} strokeWidth="0.8" fill="none" opacity="0.7" />
           </svg>
-          <div className="h-px w-10 bg-gold/50" />
+          <div className="h-px w-12 bg-gold/60" />
         </motion.div>
 
         {/* Date */}
         <motion.p
-          className="font-jakarta text-white/80 text-sm sm:text-base tracking-[0.1em]"
+          className="font-jakarta text-white/85 text-sm sm:text-base tracking-[0.1em]"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.1, duration: 0.8 }}
@@ -116,12 +96,12 @@ export function HeroSection() {
         </motion.p>
 
         <motion.p
-          className="font-jakarta text-white/55 text-xs sm:text-sm"
+          className="font-jakarta text-white/60 text-xs sm:text-sm"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.3, duration: 0.8 }}
         >
-          {WEDDING.events[1]?.venue}, {WEDDING.events[1]?.city}
+          {WEDDING.events[0]?.address} · {WEDDING.events[0]?.city}
         </motion.p>
       </div>
 
