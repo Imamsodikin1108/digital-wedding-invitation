@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { FloatingElement } from "@/components/motion/FloatingElement";
 import { WayangGunungan } from "@/components/ornament";
 import { useMusicStore } from "@/providers/musicStore";
+import { playAudioOnGesture } from "@/lib/audioController";
 import { WEDDING } from "@/constants/wedding";
 import { cn } from "@/lib/utils";
 import { COLORS } from "@/lib/tokens";
@@ -31,10 +32,13 @@ const floatingFlowers = [
 export function OpeningScreen({ guestName, isOpen, onOpen }: OpeningScreenProps) {
   const { setInteracted, hasInteracted } = useMusicStore();
 
-  // Musik langsung play saat pengguna pertama kali menyentuh/klik layar
+  // Musik langsung play saat pengguna pertama kali menyentuh/klik layar.
+  // playAudioOnGesture() dipanggil SINKRON di dalam handler agar lolos
+  // autoplay policy mobile (iOS Safari / Chrome Android).
   useEffect(() => {
     if (hasInteracted) return;
     const startMusic = () => {
+      playAudioOnGesture();
       setInteracted();
       document.removeEventListener("pointerdown", startMusic);
     };
@@ -43,6 +47,7 @@ export function OpeningScreen({ guestName, isOpen, onOpen }: OpeningScreenProps)
   }, [hasInteracted, setInteracted]);
 
   const handleOpen = useCallback(() => {
+    playAudioOnGesture();
     setInteracted();
     onOpen();
     document.documentElement.classList.remove("no-scroll");

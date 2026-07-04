@@ -1,38 +1,24 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Music, Music2, Volume2, VolumeX } from "lucide-react";
 import { useMusicStore } from "@/providers/musicStore";
 import { WEDDING } from "@/constants/wedding";
+import { getAudio } from "@/lib/audioController";
 import { cn } from "@/lib/utils";
 
 export function MusicPlayer() {
   const { isPlaying, hasInteracted, volume, toggle, setVolume } = useMusicStore();
-  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
-    const audio = new Audio(WEDDING.music.src);
-    audio.loop = true;
-    audio.volume = volume;
-    audio.preload = "metadata";
-    audioRef.current = audio;
-
-    return () => {
-      audio.pause();
-      audio.src = "";
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    const audio = audioRef.current;
+    const audio = getAudio();
     if (!audio) return;
     audio.volume = volume;
   }, [volume]);
 
   useEffect(() => {
-    const audio = audioRef.current;
+    const audio = getAudio();
     if (!audio) return;
     if (isPlaying) {
       audio.play().catch(() => {});

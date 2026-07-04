@@ -29,13 +29,13 @@ function PersonCard({
           <CornerOrnament size={40} color={COLORS.gold} className="opacity-60" />
         </div>
 
-        <div className="relative w-56 h-72 sm:w-64 sm:h-80 rounded-[2rem] overflow-hidden shadow-[var(--shadow-large)]">
+        <div className="relative w-72 h-96 sm:w-80 sm:h-[28rem] rounded-[2rem] overflow-hidden shadow-[var(--shadow-large)]">
           <Image
             src={person.photo}
             alt={`Foto ${person.fullName}`}
             fill
             className="object-cover object-top transition-transform duration-700 hover:scale-105"
-            sizes="(max-width: 768px) 224px, 256px"
+            sizes="(max-width: 768px) 288px, 320px"
           />
         </div>
         {/* Gold border accent */}
