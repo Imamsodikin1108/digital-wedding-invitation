@@ -80,11 +80,11 @@ export default function WishesAdminPage() {
               type="password"
               value={token}
               onChange={(e) => setToken(e.target.value)}
-              placeholder="Isi WISHES_ADMIN_TOKEN"
+              placeholder="Isi ADMIN_TOKEN"
               className={inputCls}
             />
             <span className="font-jakarta text-[11px] text-[var(--muted-foreground)]">
-              Wajib untuk edit / hapus. Sesuai env <code className="text-gold">WISHES_ADMIN_TOKEN</code>.
+              Wajib untuk edit / hapus. Sesuai env <code className="text-gold">ADMIN_TOKEN</code>.
             </span>
           </label>
         )}

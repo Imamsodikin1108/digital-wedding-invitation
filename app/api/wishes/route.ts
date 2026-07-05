@@ -3,6 +3,7 @@ import { z } from "zod";
 import {
   isWishesDbConfigured, listWishes, insertWish, updateWish, deleteWish,
 } from "@/lib/wishesDb";
+import { requireAdmin } from "@/lib/adminAuth";
 import { censorMessage } from "@/lib/profanity";
 
 export const runtime = "nodejs";
@@ -15,21 +16,6 @@ const bodySchema = z.object({
 });
 
 const editSchema = bodySchema.extend({ id: z.string().min(1) });
-
-/** Verifikasi hak admin lewat header x-admin-token vs env WISHES_ADMIN_TOKEN. */
-function requireAdmin(req: Request): NextResponse | null {
-  const secret = process.env.WISHES_ADMIN_TOKEN;
-  if (!secret) {
-    return NextResponse.json(
-      { error: "WISHES_ADMIN_TOKEN belum diatur di server." },
-      { status: 403 }
-    );
-  }
-  if (req.headers.get("x-admin-token") !== secret) {
-    return NextResponse.json({ error: "Token admin salah." }, { status: 401 });
-  }
-  return null;
-}
 
 export async function GET() {
   if (!isWishesDbConfigured()) {

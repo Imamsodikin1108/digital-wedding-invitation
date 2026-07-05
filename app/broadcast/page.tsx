@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Upload, Users, MessageCircle, Copy, Check, Download, Trash2, Link2,
   RotateCcw, Circle, CheckCircle2, Zap, Square, Info, Pencil, X, ChevronRight,
+  Globe, Smartphone, KeyRound,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { WEDDING } from "@/constants/wedding";
@@ -40,16 +41,42 @@ export default function BroadcastPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState<Set<string>>(new Set());
+  const [serverSync, setServerSync] = useState(false);
+  const [token, setToken] = useState("");
+
+  const serverRef = useRef(false);
+  const tokenRef = useRef("");
+  serverRef.current = serverSync;
+  tokenRef.current = token;
 
   useEffect(() => {
     setBaseUrl(window.location.origin);
+    setToken(sessionStorage.getItem("admin_token") || "");
+    // Muat status dari localStorage (fallback) lebih dulu.
     try {
       const raw = localStorage.getItem("broadcast_sent");
       if (raw) setSent(new Set(JSON.parse(raw) as string[]));
     } catch {
       /* ignore corrupt storage */
     }
+    // Lalu coba server (bila DB aktif) → jadi sumber utama & lintas perangkat.
+    (async () => {
+      try {
+        const res = await fetch("/api/broadcast", { cache: "no-store" });
+        const data = await res.json();
+        if (data.configured) {
+          setServerSync(true);
+          setSent(new Set(data.sent as string[]));
+        }
+      } catch {
+        /* offline → tetap pakai localStorage */
+      }
+    })();
   }, []);
+
+  useEffect(() => {
+    sessionStorage.setItem("admin_token", token);
+  }, [token]);
 
   function writeStorage(s: Set<string>) {
     try {
@@ -59,8 +86,32 @@ export default function BroadcastPage() {
     }
   }
 
-  // Functional updates → aman dari stale closure saat dipanggil di dalam loop.
-  const markSent = useCallback((name: string) => {
+  // Sinkron ke database (fire-and-forget) bila DB aktif. Membaca ref agar
+  // aman dari stale closure saat dipanggil di dalam loop kirim otomatis.
+  function serverMark(name: string, phone?: string) {
+    if (!serverRef.current) return;
+    fetch("/api/broadcast", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-admin-token": tokenRef.current },
+      body: JSON.stringify({ name, phone: phone || undefined }),
+    }).catch(() => {});
+  }
+  function serverUnmark(name: string) {
+    if (!serverRef.current) return;
+    fetch(`/api/broadcast?name=${encodeURIComponent(name)}`, {
+      method: "DELETE",
+      headers: { "x-admin-token": tokenRef.current },
+    }).catch(() => {});
+  }
+  function serverReset() {
+    if (!serverRef.current) return;
+    fetch("/api/broadcast?all=1", {
+      method: "DELETE",
+      headers: { "x-admin-token": tokenRef.current },
+    }).catch(() => {});
+  }
+
+  const markSent = useCallback((name: string, phone?: string) => {
     setSent((prev) => {
       if (prev.has(name)) return prev;
       const next = new Set(prev);
@@ -68,13 +119,19 @@ export default function BroadcastPage() {
       writeStorage(next);
       return next;
     });
+    serverMark(name, phone);
   }, []);
 
-  const toggleSent = useCallback((name: string) => {
+  const toggleSent = useCallback((name: string, phone?: string) => {
     setSent((prev) => {
       const next = new Set(prev);
-      if (next.has(name)) next.delete(name);
-      else next.add(name);
+      if (next.has(name)) {
+        next.delete(name);
+        serverUnmark(name);
+      } else {
+        next.add(name);
+        serverMark(name, phone);
+      }
       writeStorage(next);
       return next;
     });
@@ -86,6 +143,7 @@ export default function BroadcastPage() {
       writeStorage(empty);
       return empty;
     });
+    serverReset();
   }, []);
 
   // Edit nomor HP tamu (termasuk yang sudah tercatat terkirim).
@@ -104,6 +162,7 @@ export default function BroadcastPage() {
   const [intervalSec, setIntervalSec] = useState(8);
   const [autoError, setAutoError] = useState("");
   const [autoCountdown, setAutoCountdown] = useState(0);
+  const [autoMode, setAutoMode] = useState(false);
 
   const waWinRef = useRef<Window | null>(null);
   const workerRef = useRef<Worker | null>(null);
@@ -153,7 +212,7 @@ export default function BroadcastPage() {
       const msg = buildMessage(templateRef.current, g.name, link);
       win.location.href = `https://web.whatsapp.com/send?phone=${g.phone}&text=${encodeURIComponent(msg)}`;
       win.focus();
-      markSent(g.name);
+      markSent(g.name, g.phone);
       setAutoPos(i + 1);
       nextIndexRef.current = i + 1;
     },
@@ -220,12 +279,11 @@ export default function BroadcastPage() {
     setAutoPos(0);
     setAutoRunning(true);
     sendOne(0);
-    startTicker();
-  }, [guests, sent, sendOne, startTicker]);
+    if (autoMode) startTicker();
+  }, [guests, sent, sendOne, startTicker, autoMode]);
 
-  // Lanjut ke tamu berikutnya segera + reset hitungan jeda.
-  const skipNow = useCallback(() => {
-    if (!autoRunning) return;
+  // Kirim tamu berikutnya (dipakai tombol manual & tombol "lanjut" auto).
+  const sendNext = useCallback(() => {
     if (nextIndexRef.current >= queueRef.current.length) {
       stopAuto();
       return;
@@ -233,7 +291,26 @@ export default function BroadcastPage() {
     sendOne(nextIndexRef.current);
     countdownRef.current = Math.max(3, intervalRef.current);
     setAutoCountdown(countdownRef.current);
-  }, [autoRunning, sendOne, stopAuto]);
+  }, [sendOne, stopAuto]);
+
+  // Hidupkan/matikan mode auto saat sedang berjalan.
+  const toggleAutoMode = useCallback(
+    (on: boolean) => {
+      setAutoMode(on);
+      if (!autoRunning) return;
+      if (on) {
+        startTicker();
+      } else {
+        workerRef.current?.postMessage({ type: "stop" });
+        if (fallbackTimerRef.current) {
+          clearInterval(fallbackTimerRef.current);
+          fallbackTimerRef.current = null;
+        }
+        setAutoCountdown(0);
+      }
+    },
+    [autoRunning, startTicker]
+  );
 
   useEffect(
     () => () => {
@@ -335,6 +412,34 @@ export default function BroadcastPage() {
               Ganti ke domain produksi Anda setelah deploy.
             </span>
           </label>
+
+          {/* Status penyimpanan + token admin (hanya saat DB aktif) */}
+          <div className="flex items-center gap-2 text-[11px] font-jakarta text-[var(--muted-foreground)]">
+            {serverSync ? (
+              <><Globe className="w-3.5 h-3.5 text-gold" /> Status tersimpan di database — lintas perangkat</>
+            ) : (
+              <><Smartphone className="w-3.5 h-3.5 text-gold" /> Status tersimpan di perangkat ini saja</>
+            )}
+          </div>
+
+          {serverSync && (
+            <label className="flex flex-col gap-1.5">
+              <span className="font-jakarta text-xs font-semibold text-[var(--foreground)] flex items-center gap-1.5">
+                <KeyRound className="w-3.5 h-3.5 text-gold" /> Token Admin
+              </span>
+              <input
+                type="password"
+                value={token}
+                onChange={(e) => setToken(e.target.value)}
+                placeholder="Isi ADMIN_TOKEN"
+                className="h-10 px-3 rounded-lg border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] font-jakarta text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+              />
+              <span className="font-jakarta text-[11px] text-[var(--muted-foreground)]">
+                Wajib agar status &quot;terkirim&quot; tersimpan ke database. Sesuai env{" "}
+                <code className="text-gold">ADMIN_TOKEN</code>.
+              </span>
+            </label>
+          )}
 
           <label className="flex flex-col gap-1.5">
             <span className="font-jakarta text-xs font-semibold text-[var(--foreground)] flex items-center gap-1.5">
@@ -438,77 +543,101 @@ export default function BroadcastPage() {
               </div>
             </div>
 
-            {/* Kirim Otomatis (berurutan) */}
+            {/* Kirim berurutan (1 jendela WA dipakai ulang) */}
             {hasPhones && (
               <div className="rounded-xl border border-gold/30 bg-[var(--card)] p-4 flex flex-col gap-3">
                 <div className="flex items-center gap-2">
                   <Zap className="w-4 h-4 text-gold" />
                   <span className="font-jakarta text-xs font-semibold text-[var(--foreground)]">
-                    Kirim Otomatis (berurutan)
+                    Kirim Berurutan
                   </span>
                 </div>
 
                 <div className="flex items-start gap-2 rounded-lg bg-[var(--muted)] p-2.5">
                   <Info className="w-3.5 h-3.5 text-gold shrink-0 mt-0.5" />
                   <p className="font-jakarta text-[11px] text-[var(--muted-foreground)] leading-relaxed">
-                    Sebuah <b>jendela pop-up</b> WhatsApp Web dibuka lalu berpindah
-                    otomatis ke tamu berikutnya tiap jeda. Anda cukup menekan tombol{" "}
-                    <b className="text-green">kirim (➤)</b> di tiap chat yang muncul —
-                    WhatsApp tidak mengizinkan penekanan tombol kirim secara otomatis.
-                    <br />
-                    <b>Penting:</b> izinkan pop-up, sudah login WhatsApp Web, dan{" "}
-                    <b>jangan tutup / minimize tab admin ini</b> agar loop tidak
-                    berhenti. Jika sempat tertunda, klik <b>Lanjut sekarang</b>.
+                    Satu <b>jendela pop-up</b> WhatsApp Web dipakai ulang (tidak buka
+                    baru). Tekan <b className="text-green">kirim (➤)</b> di WhatsApp,
+                    lalu klik <b>Kirim Tamu Berikutnya</b> untuk lanjut. Izinkan pop-up
+                    &amp; sudah login WhatsApp Web.
                   </p>
                 </div>
 
-                <div className="flex items-center gap-3 flex-wrap">
-                  <label className="flex items-center gap-1.5 font-jakarta text-xs text-[var(--muted-foreground)]">
-                    Jeda
-                    <input
-                      type="number"
-                      min={3}
-                      max={120}
-                      value={intervalSec}
-                      onChange={(e) =>
-                        setIntervalSec(Math.max(3, Number(e.target.value) || 3))
-                      }
-                      disabled={autoRunning}
-                      className="w-16 h-9 px-2 rounded-lg border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] text-sm text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold disabled:opacity-50"
-                    />
-                    detik
-                  </label>
-
-                  {!autoRunning ? (
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      onClick={startAuto}
-                      disabled={phoneUnsent === 0}
-                    >
-                      <Zap className="w-4 h-4" />
-                      Mulai Kirim Otomatis ({phoneUnsent})
-                    </Button>
-                  ) : (
-                    <>
-                      <Button variant="secondary" size="sm" onClick={stopAuto}>
-                        <Square className="w-4 h-4" />
-                        Berhenti ({autoPos}/{autoTotal})
+                {!autoRunning ? (
+                  <div className="flex flex-col gap-3">
+                    <label className="flex items-center gap-2 font-jakarta text-xs text-[var(--muted-foreground)]">
+                      <input
+                        type="checkbox"
+                        checked={autoMode}
+                        onChange={(e) => setAutoMode(e.target.checked)}
+                        className="accent-gold w-4 h-4"
+                      />
+                      Auto-lanjut tiap
+                      <input
+                        type="number"
+                        min={3}
+                        max={120}
+                        value={intervalSec}
+                        onChange={(e) =>
+                          setIntervalSec(Math.max(3, Number(e.target.value) || 3))
+                        }
+                        disabled={!autoMode}
+                        className="w-16 h-8 px-2 rounded-lg border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] text-sm text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold disabled:opacity-50"
+                      />
+                      detik (opsional)
+                    </label>
+                    <div>
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={startAuto}
+                        disabled={phoneUnsent === 0}
+                      >
+                        <Zap className="w-4 h-4" />
+                        Mulai Kirim ({phoneUnsent} tamu)
                       </Button>
-                      <Button variant="primary" size="sm" onClick={skipNow}>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-3">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Button
+                        variant="primary"
+                        size="md"
+                        onClick={sendNext}
+                        disabled={autoPos >= autoTotal}
+                      >
                         <ChevronRight className="w-4 h-4" />
-                        Lanjut sekarang
+                        {autoPos >= autoTotal
+                          ? "Semua Terkirim"
+                          : "Kirim Tamu Berikutnya"}
                       </Button>
-                    </>
-                  )}
-                </div>
+                      <Button variant="secondary" size="sm" onClick={stopAuto}>
+                        <Square className="w-4 h-4" /> Berhenti
+                      </Button>
+                    </div>
 
-                {autoRunning && (
-                  <p className="font-jakarta text-[11px] text-gold">
-                    Tamu ke-{autoPos} dari {autoTotal} terkirim · pindah ke berikutnya
-                    dalam <b>{autoCountdown}s</b> · tekan kirim (➤) di WhatsApp.
-                  </p>
+                    <label className="flex items-center gap-2 font-jakarta text-xs text-[var(--muted-foreground)]">
+                      <input
+                        type="checkbox"
+                        checked={autoMode}
+                        onChange={(e) => toggleAutoMode(e.target.checked)}
+                        className="accent-gold w-4 h-4"
+                      />
+                      Auto-lanjut tiap {intervalSec}s
+                      {autoMode && autoCountdown > 0 && (
+                        <span className="text-gold font-semibold">
+                          · berikutnya dalam {autoCountdown}s
+                        </span>
+                      )}
+                    </label>
+
+                    <p className="font-jakarta text-[11px] text-gold">
+                      {autoPos} dari {autoTotal} terkirim · tekan kirim (➤) di WhatsApp.
+                    </p>
+                  </div>
                 )}
+
                 {autoError && (
                   <p className="font-jakarta text-[11px] text-rose leading-relaxed">
                     ⚠️ {autoError}
@@ -551,8 +680,8 @@ function GuestRow({
   baseUrl: string;
   template: string;
   isSent: boolean;
-  onMarkSent: (name: string) => void;
-  onToggleSent: (name: string) => void;
+  onMarkSent: (name: string, phone?: string) => void;
+  onToggleSent: (name: string, phone?: string) => void;
   onUpdatePhone: (id: string, raw: string) => void;
 }) {
   const [copied, setCopied] = useState(false);
@@ -588,7 +717,7 @@ function GuestRow({
     >
       {/* Status toggle */}
       <button
-        onClick={() => onToggleSent(guest.name)}
+        onClick={() => onToggleSent(guest.name, guest.phone)}
         className={cn(
           "shrink-0 transition-colors",
           isSent ? "text-green" : "text-[var(--muted-foreground)]/40 hover:text-gold"
@@ -669,7 +798,7 @@ function GuestRow({
         href={waLink}
         target="_blank"
         rel="noopener noreferrer"
-        onClick={() => onMarkSent(guest.name)}
+        onClick={() => onMarkSent(guest.name, guest.phone)}
         className="shrink-0 inline-flex items-center gap-1.5 h-9 px-4 rounded-full text-xs font-jakarta font-semibold text-white transition-colors"
         style={{ backgroundColor: "#25D366" }}
         aria-label={`Kirim WhatsApp ke ${guest.name}`}

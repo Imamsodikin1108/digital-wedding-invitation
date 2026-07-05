@@ -1,4 +1,4 @@
-import { sql } from "@vercel/postgres";
+import { getPool, isDbConfigured } from "@/lib/db";
 
 export interface DbWish {
   id: string;
@@ -8,15 +8,15 @@ export interface DbWish {
   createdAt: number;
 }
 
-/** True bila env Vercel Postgres (Neon) sudah diisi. */
+/** True bila koneksi database sudah tersedia (env apa pun namanya). */
 export function isWishesDbConfigured(): boolean {
-  return Boolean(process.env.POSTGRES_URL);
+  return isDbConfigured();
 }
 
 let ensured = false;
 async function ensureTable() {
   if (ensured) return;
-  await sql`
+  await getPool().sql`
     CREATE TABLE IF NOT EXISTS wishes (
       id BIGSERIAL PRIMARY KEY,
       name TEXT NOT NULL,
@@ -40,7 +40,7 @@ function mapRow(r: Record<string, unknown>): DbWish {
 
 export async function listWishes(limit = 200): Promise<DbWish[]> {
   await ensureTable();
-  const { rows } = await sql`
+  const { rows } = await getPool().sql`
     SELECT id, name, attending, message, created_at
     FROM wishes ORDER BY created_at DESC LIMIT ${limit}
   `;
@@ -53,7 +53,7 @@ export async function insertWish(w: {
   message: string;
 }): Promise<DbWish> {
   await ensureTable();
-  const { rows } = await sql`
+  const { rows } = await getPool().sql`
     INSERT INTO wishes (name, attending, message)
     VALUES (${w.name}, ${w.attending}, ${w.message})
     RETURNING id, name, attending, message, created_at
@@ -66,7 +66,7 @@ export async function updateWish(
   w: { name: string; attending: string; message: string }
 ): Promise<DbWish | null> {
   await ensureTable();
-  const { rows } = await sql`
+  const { rows } = await getPool().sql`
     UPDATE wishes
     SET name = ${w.name}, attending = ${w.attending}, message = ${w.message}
     WHERE id = ${Number(id)}
@@ -77,6 +77,6 @@ export async function updateWish(
 
 export async function deleteWish(id: string): Promise<boolean> {
   await ensureTable();
-  const { rowCount } = await sql`DELETE FROM wishes WHERE id = ${Number(id)}`;
+  const { rowCount } = await getPool().sql`DELETE FROM wishes WHERE id = ${Number(id)}`;
   return (rowCount ?? 0) > 0;
 }
