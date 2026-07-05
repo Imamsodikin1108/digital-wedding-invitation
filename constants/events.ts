@@ -11,6 +11,8 @@ export const EVENTS: WeddingEvent[] = [
     address: "Desa Wonosari, Kec. Gn. Sugih",
     city: "Kab. Lampung Tengah, Lampung",
     mapsUrl: "https://maps.app.goo.gl/4ySjNQNpuZyiCX1y9?g_st=iw",
+    mapQuery:
+      "W5R6+9FR Masjid Baiturrohim, Wono Sari, Kec. Gn. Sugih, Kabupaten Lampung Tengah, Lampung 34162",
     description: "Prosesi akad nikah dan resepsi pernikahan",
     dressCode: "Batik / Kebaya",
   },
@@ -24,6 +26,7 @@ export const EVENTS: WeddingEvent[] = [
     address: "Kec. Sendana, Kab. Majene",
     city: "Sulawesi Barat",
     mapsUrl: "https://maps.app.goo.gl/4nX5hU2jT6wHLeEL8?g_st=ipc",
+    mapQuery: "-3.4001199,118.8604828",
     description: "Prosesi ngunduh mantu (WITA)",
     dressCode: "Formal / Batik",
   },

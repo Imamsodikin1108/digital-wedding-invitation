@@ -27,6 +27,9 @@ export interface WeddingEvent {
   address: string;
   city: string;
   mapsUrl: string;
+  /** Query akurat untuk peta embed: "lat,lng" atau plus code + nama tempat.
+   *  Dipakai agar pin peta tepat, bukan hasil tebakan dari nama venue. */
+  mapQuery?: string;
   description?: string;
   dressCode?: string;
 }

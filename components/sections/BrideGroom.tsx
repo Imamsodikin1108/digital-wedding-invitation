@@ -109,23 +109,19 @@ export function BrideGroom() {
         <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-8 md:gap-6 lg:gap-12 items-center">
           <PersonCard person={WEDDING.groom} direction="left" />
 
-          {/* Center divider — desktop */}
-          <FadeUp className="hidden md:flex flex-col items-center gap-5" delay={0.2}>
-            <div className="h-16 w-px bg-gradient-to-b from-transparent via-gold/40 to-transparent" />
+          {/* Center ampersand — selalu di tengah antara kedua mempelai
+              (vertikal di desktop, horizontal di mobile) */}
+          <FadeUp className="flex flex-col items-center gap-3 md:gap-5" delay={0.2}>
+            <div className="hidden md:block h-16 w-px bg-gradient-to-b from-transparent via-gold/40 to-transparent" />
+            <div className="md:hidden h-px w-16 bg-gold/25" />
             <span className="font-cinzel text-gold text-3xl">&amp;</span>
-            <Divider variant="gunungan" className="w-8 flex-col rotate-90" />
-            <div className="h-16 w-px bg-gradient-to-b from-transparent via-gold/40 to-transparent" />
+            <Divider variant="gunungan" className="hidden md:flex w-8 flex-col rotate-90" />
+            <div className="hidden md:block h-16 w-px bg-gradient-to-b from-transparent via-gold/40 to-transparent" />
+            <div className="md:hidden h-px w-16 bg-gold/25" />
           </FadeUp>
 
           <PersonCard person={WEDDING.bride} direction="right" />
         </div>
-
-        {/* Mobile ampersand */}
-        <FadeUp className="flex md:hidden flex-col items-center gap-3 my-8">
-          <div className="h-px w-16 bg-gold/20" />
-          <span className="font-cinzel text-gold text-3xl">&amp;</span>
-          <div className="h-px w-16 bg-gold/20" />
-        </FadeUp>
       </div>
     </section>
   );

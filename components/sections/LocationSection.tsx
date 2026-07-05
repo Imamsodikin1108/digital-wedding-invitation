@@ -10,7 +10,12 @@ export function LocationSection() {
   const [activeEventId, setActiveEventId] = useState(WEDDING.events[0]?.id ?? "");
 
   const activeEvent = WEDDING.events.find((e) => e.id === activeEventId) ?? WEDDING.events[0];
-  const mapsEmbedUrl = `https://maps.google.com/maps?q=${encodeURIComponent((activeEvent?.venue ?? "") + " " + (activeEvent?.city ?? ""))}&output=embed`;
+  // Utamakan mapQuery (koordinat / plus code) agar pin peta tepat; jatuh ke
+  // nama venue + kota bila mapQuery belum diisi.
+  const mapsQuery =
+    activeEvent?.mapQuery ??
+    `${activeEvent?.venue ?? ""} ${activeEvent?.city ?? ""}`;
+  const mapsEmbedUrl = `https://maps.google.com/maps?q=${encodeURIComponent(mapsQuery)}&z=17&output=embed`;
 
   return (
     <section className="section bg-[var(--background)]" id="location" aria-label="Location section">
