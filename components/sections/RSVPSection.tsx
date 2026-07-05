@@ -14,6 +14,7 @@ import { BatikKawung } from "@/components/ornament";
 import { WEDDING } from "@/constants/wedding";
 import { COLORS } from "@/lib/tokens";
 import { isFormspreeConfigured } from "@/lib/config";
+import { useWishesStore } from "@/providers/wishesStore";
 import { cn } from "@/lib/utils";
 
 const rsvpSchema = z.object({
@@ -36,6 +37,7 @@ const attendingOptions = [
 export function RSVPSection() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const submitWish = useWishesStore((s) => s.submit);
 
   const {
     register,
@@ -51,21 +53,28 @@ export function RSVPSection() {
   const selectedAttending = watch("attending");
 
   async function onSubmit(data: RSVPFormData) {
-    if (!isFormspreeConfigured(WEDDING.formspreeId)) {
-      setIsSubmitted(true);
-      return;
-    }
-
     setIsSubmitting(true);
     try {
-      const res = await fetch(`https://formspree.io/f/${WEDDING.formspreeId}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify(data),
-      });
-      if (res.ok) setIsSubmitted(true);
-    } catch {
-      // silent fail
+      // 1) Rekam data kehadiran ke Formspree (bila dikonfigurasi) — best effort.
+      if (isFormspreeConfigured(WEDDING.formspreeId)) {
+        await fetch(`https://formspree.io/f/${WEDDING.formspreeId}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify(data),
+        }).catch(() => {});
+      }
+
+      // 2) Simpan ucapan (server bila ada → dibagikan ke semua tamu; else lokal).
+      const msg = data.message?.trim();
+      if (msg) {
+        await submitWish({
+          name: data.name,
+          attending: data.attending,
+          message: msg,
+        });
+      }
+
+      setIsSubmitted(true);
     } finally {
       setIsSubmitting(false);
     }
@@ -85,7 +94,7 @@ export function RSVPSection() {
         <SectionTitle
           label="Konfirmasi Kehadiran"
           title="RSVP"
-          subtitle="Kehadiran Anda merupakan kebahagiaan bagi kami. Mohon konfirmasi sebelum 1 Oktober 2026."
+          subtitle="Kehadiran Anda merupakan kebahagiaan bagi kami. Mohon konfirmasi sebelum 12 Juli 2026."
           className="mb-12"
         />
 
@@ -106,6 +115,8 @@ export function RSVPSection() {
                     </h3>
                     <p className="font-jakarta text-[var(--muted-foreground)] text-sm mt-2">
                       Konfirmasi kehadiran Anda telah kami terima. Kami sangat menantikan kehadiran Anda.
+                      Bila Anda menuliskan pesan, ucapan Anda kini tampil di bagian
+                      &ldquo;Ucapan Selamat&rdquo;.
                     </p>
                   </div>
                 </motion.div>

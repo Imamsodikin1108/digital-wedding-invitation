@@ -37,7 +37,7 @@ export function VideoSection() {
       <div className="container-wedding">
         <SectionTitle
           label="Momen Bahagia"
-          title="Video Pernikahan"
+          title="Video Prewedding"
           subtitle="Abadikan setiap momen indah dalam kenangan yang tak terlupakan"
           className="mb-12"
         />

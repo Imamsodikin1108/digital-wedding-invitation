@@ -49,7 +49,7 @@ export function HeroSection() {
             <div className="h-px w-8 bg-gold/50" />
           </div>
           <span className="font-cinzel text-white/70 text-[10px] sm:text-xs tracking-[0.2em] uppercase">
-            Mengundang Anda Hadir Dalam
+            Dengan Ridho Allah SWT, Kami Mengundang Anda Hadir Dalam Pernikahan Kami
           </span>
         </motion.div>
 
